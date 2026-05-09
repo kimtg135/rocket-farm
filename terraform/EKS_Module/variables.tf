@@ -200,3 +200,8 @@ variable "extra_ingress_cidrs" {
   type        = list(string)
   default     = []
 }
+
+variable "admin_iam_principal" {
+  description = "IAM principal ARN allowed to assume the EKS admin role (e.g.arn:aws:iam::ACCOUNT_ID:role/DevOps)"
+  type        = string
+}
