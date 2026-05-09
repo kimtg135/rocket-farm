@@ -95,7 +95,7 @@ resource "aws_iam_role" "eks_admin" {
     Version = "2012-10-17"
     Statement = [{
       Effect    = "Allow"
-      Principal = { AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root" }
+      Principal = { AWS = var.admin_iam_principal }
       Action    = "sts:AssumeRole"
     }]
   })
