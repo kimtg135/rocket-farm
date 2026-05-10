@@ -1,0 +1,26 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+
+patches:
+  # karpenter-config: Tokyo DR 전용 overlay 경로 설정 및 기존 kustomize 패치 제거
+  - target:
+      kind: Application
+      name: karpenter-config
+    patch: |-
+      - op: replace
+        path: /spec/source/path
+        value: yaml/Karpenter/karpenter_settings/overlays/dr
+      - op: remove
+        path: /spec/source/kustomize
+
+  # karpenter Helm: DR 환경 values 파일 추가
+  - target:
+      kind: Application
+      name: karpenter
+    patch: |-
+      - op: add
+        path: /spec/sources/0/helm/valueFiles/-
+        value: $values/yaml/Karpenter/values/values-dr.yaml

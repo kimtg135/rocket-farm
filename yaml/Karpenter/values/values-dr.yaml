@@ -1,0 +1,16 @@
+# Tokyo DR 클러스터 전용 Karpenter values
+serviceAccount:
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::AccountID:role/rocket-farm-dr-karpenter-controller
+
+nodeSelector:
+  eks.amazonaws.com/nodegroup: rocket-farm-dr-management
+
+tolerations:
+  - key: role
+    operator: Equal
+    value: management
+    effect: NoSchedule
+
+settings:
+  clusterName: rocket-farm-dr

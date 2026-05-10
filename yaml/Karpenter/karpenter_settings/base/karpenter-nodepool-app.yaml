@@ -1,0 +1,53 @@
+# App NodePool - 일반 워크로드용 노드 프로비저닝 규칙
+# 특징:
+#   - m5, r5, c5 on-demand 인스턴스
+#   - 가용영역: ap-northeast-2a, 2c
+#   - 리소스 한도: CPU 10코어, 메모리 20Gi
+#   - taint 없음: 모든 일반 Pod이 스케줄링됨
+#   - Consolidation 정책: 미사용/저활용 노드 5분 후 자동 정리
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: app
+  annotations:
+    argocd.argoproj.io/sync-wave: "3" # EC2NodeClass(wave 2) 생성 후 적용
+spec:
+  template:
+    metadata:
+      labels:
+        role: app
+    spec:
+      # 이 NodePool이 사용할 EC2NodeClass 참조
+      nodeClassRef:
+        group: karpenter.k8s.aws
+        kind: EC2NodeClass
+        name: app
+
+      requirements:
+        # 추후 arm64과 amd64가 둘다 사용되는 instance-type 사용시 지정 필요
+        - key: kubernetes.io/arch
+          operator: In
+          values: ["amd64"]
+        - key: karpenter.sh/capacity-type
+          operator: In
+          values: ["on-demand"]
+        - key: karpenter.k8s.aws/instance-family
+          operator: In
+          values: ["m5", "c5"]
+        - key: topology.kubernetes.io/zone
+          operator: In
+          values:
+            - REPLACE_ME_AZ1 # 환경별 overlay에서 patch
+            - REPLACE_ME_AZ2 # 환경별 overlay에서 patch
+
+  # 이 NodePool이 프로비저닝할 수 있는 최대 리소스 한도
+  limits:
+    cpu: "20"
+    memory: "30Gi"
+
+  # 노드 정리 정책: 비어있거나 저활용 노드를 5분(300초) 후 자동 통합
+  disruption:
+    consolidationPolicy: WhenEmptyOrUnderutilized
+    consolidateAfter: 180s
+    budgets:
+      - nodes: "10%"

@@ -1,0 +1,36 @@
+# OCI 레지스트리에서 Karpenter Helm chart를 설치하여 자동 노드 프로비저너를 배포한다.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: karpenter
+  namespace: argocd
+  annotations: # 해당설정이 들어갔을때 argocd가 없어도 오류는 없고 해당값을 무시하게됨
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: default
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: karpenter
+  sources:
+    # Karpenter Helm chart 소스
+    - repoURL: oci://public.ecr.aws/karpenter/karpenter
+      chart: karpenter
+      targetRevision: 1.9.0
+      helm:
+        valueFiles:
+          - $values/yaml/Karpenter/values/values.yaml
+        valuesFrom: # ← 추가
+          - kind: Secret
+            name: karpenter-values # ExternalSecret이 만드는 Secret 이름
+            valuesKey: values.yaml # Secret 안의 key
+            optional: true # Secret이 아직 없어도 배포 진행 (wave 2에서 생성 후 selfHeal로 재동기화)
+    # values.yaml이 있는 Git 저장소
+    - repoURL: git@github.com:kimtg135/rocket-farm.git
+      targetRevision: main
+      ref: values
+  syncPolicy:
+    automated:
+      prune: true # Git에서 삭제된 리소스 k8s에서도 삭제
+      selfHeal: true # 수동으로 변경된 리소스 자동 복구
+    syncOptions:
+      - CreateNamespace=true # karpenter namespace 없으면 자동 생성

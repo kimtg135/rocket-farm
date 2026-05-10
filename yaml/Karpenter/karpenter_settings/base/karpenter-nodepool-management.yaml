@@ -1,0 +1,59 @@
+# Management NodePool - 관리 컴포넌트용 노드 프로비저닝 규칙
+# 특징:
+#   - t3, m5 on-demand 인스턴스
+#   - 가용영역: ap-northeast-2a, 2c
+#   - 리소스 한도: CPU 6코어, 메모리 8Gi
+#   - taint 적용: role=management:NoSchedule (tolerations 필요)
+#   - Consolidation 정책: 미사용/저활용 노드 5분 후 자동 정리
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: management
+  annotations:
+    argocd.argoproj.io/sync-wave: "3" # EC2NodeClass(wave 2) 생성 후 적용
+spec:
+  template:
+    metadata:
+      labels:
+        role: management
+    spec:
+      # 이 NodePool이 사용할 EC2NodeClass 참조
+      nodeClassRef:
+        group: karpenter.k8s.aws
+        kind: EC2NodeClass
+        name: management
+
+      requirements:
+        # 추후 arm64과 amd64가 둘다 사용되는 instance-type 사용시 지정 필요
+        - key: kubernetes.io/arch
+          operator: In
+          values: ["amd64"]
+        - key: karpenter.sh/capacity-type
+          operator: In
+          values: ["on-demand"]
+        - key: karpenter.k8s.aws/instance-family
+          operator: In
+          values: ["c5", "m5"]
+        - key: topology.kubernetes.io/zone
+          operator: In
+          values:
+            - REPLACE_ME_AZ1 # 환경별 overlay에서 patch
+            - REPLACE_ME_AZ2 # 환경별 overlay에서 patch
+
+      # management 전용 taint: tolerations이 없는 Pod은 이 노드에 스케줄링되지 않음
+      taints:
+        - key: role
+          value: management
+          effect: NoSchedule
+
+  # 이 NodePool이 프로비저닝할 수 있는 최대 리소스 한도
+  limits:
+    cpu: "10"
+    memory: "20Gi"
+
+  # 노드 정리 정책: 비어있거나 저활용 노드를 5분(300초) 후 자동 통합
+  disruption:
+    consolidationPolicy: WhenEmptyOrUnderutilized
+    consolidateAfter: 180s
+    budgets:
+      - nodes: "10%"
