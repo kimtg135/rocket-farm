@@ -19,7 +19,7 @@
 
 | Category | Stack                                                 |
 | -------- | ----------------------------------------------------- |
-| Infra    | AWS EKS · VPC · Aurora MySQL · ElastiCache Redis · S3 |
+| Infra    | AWS EKS · VPC · Aurora MySQL · ElastiCache Redis      |
 | IaC      | Terraform                                             |
 | K8s      | Karpenter · KEDA                                      |
 | DR       | Aurora Global Database · Warm Standby                 |
@@ -33,13 +33,19 @@ rocket-farm/
 │   └── images/
 │       └── architecture.jpg
 ├── terraform/
-│   ├── EKS/
-│   └── DB/
-│       ├── Aurora/
-│       └── ElastiCache/
+│   ├── Modules/
+│   │   ├── VPC/
+│   │   ├── KMS/
+│   │   ├── EKS/
+│   │   └── DB/
+│   │       ├── Aurora/
+│   │       └── ElastiCache/
+│   ├── Global/
+│   ├── Seoul/
+│   └── Tokyo/
 └── yaml/
-    ├── karpenter/
-    └── keda/
+    ├── Karpenter/
+    └── KEDA/
 ```
 
 ## 🔗 Portfolio
