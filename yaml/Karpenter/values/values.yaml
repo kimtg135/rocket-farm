@@ -1,0 +1,22 @@
+# Karpenter Helm chart values (공통)
+# 환경별 설정(serviceAccount, nodeSelector, tolerations, settings.clusterName)은
+# values-main.yaml / values-dr.yaml 에 분리되어 있음
+
+# karpenter pod 생성 갯수
+replicas: 2
+
+controller:
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "256Mi"
+    limits:
+      cpu: "0.5"
+      memory: "0.5Gi"
+
+settings:
+  # clusterName은 values-main.yaml / values-dr.yaml 에서 설정
+  clusterEndpoint: ""
+  interruptionQueue: ""
+  # sqs + eventbridge 사용시에 추가
+  #rocket-farm-karpenter-interruption

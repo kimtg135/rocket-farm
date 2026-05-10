@@ -1,0 +1,76 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+
+# Seoul (Main) 리전 전용 설정
+patches:
+  # EC2NodeClass: 공통 설정 (Role, Subnet/SG 셀렉터, Tags, EBS KMS)
+  - target:
+      kind: EC2NodeClass
+    patch: |-
+      - op: replace
+        path: /spec/role
+        value: "rocket-farm-main-node-role"
+      - op: replace
+        path: /spec/subnetSelectorTerms/0/tags/karpenter~1eks-cluster
+        value: "rocket-farm-main"
+      - op: replace
+        path: /spec/securityGroupSelectorTerms/0/tags/karpenter~1eks-cluster
+        value: "rocket-farm-main"
+      - op: replace
+        path: /spec/tags/karpenter~1eks-cluster
+        value: "rocket-farm-main"
+      - op: replace
+        path: /spec/blockDeviceMappings/0/ebs/kmsKeyID
+        value: "alias/rocket-farm-main-main-kms"
+
+  # EC2NodeClass: 개별 Name 태그 패치
+  - target:
+      kind: EC2NodeClass
+      name: app
+    patch: |-
+      - op: replace
+        path: /spec/tags/Name
+        value: "rocket-farm-main-app-node-karpenter"
+  - target:
+      kind: EC2NodeClass
+      name: management
+    patch: |-
+      - op: replace
+        path: /spec/tags/Name
+        value: "rocket-farm-main-management-node-karpenter"
+  - target:
+      kind: EC2NodeClass
+      name: monitoring
+    patch: |-
+      - op: replace
+        path: /spec/tags/Name
+        value: "rocket-farm-main-monitoring-node-karpenter"
+
+  # NodePool: 가용 영역(AZ) 패치 (requirements/3: topology.kubernetes.io/zone)
+  - target:
+      kind: NodePool
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/requirements/3/values
+        value: ["ap-northeast-2a", "ap-northeast-2c"]
+
+  # SecretStore: AWS 리전 패치
+  - target:
+      kind: SecretStore
+      name: karpenter-parameterstore
+    patch: |-
+      - op: replace
+        path: /spec/provider/aws/region
+        value: "ap-northeast-2"
+
+  # ExternalSecret: SSM 파라미터 경로 패치
+  - target:
+      kind: ExternalSecret
+      name: karpenter-values
+    patch: |-
+      - op: replace
+        path: /spec/data/0/remoteRef/key
+        value: "/rocket-farm/main/eks/endpoint"

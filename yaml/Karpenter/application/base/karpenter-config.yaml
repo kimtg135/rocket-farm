@@ -1,0 +1,62 @@
+# Karpenter 설치 완료 후 NodePool 및 EC2NodeClass 커스텀 리소스를 적용한다.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: karpenter-config
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2" # karpenter 설치 후 적용
+spec:
+  project: default
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: karpenter
+  source:
+    repoURL: git@github.com:kimtg135/rocket-farm.git
+    targetRevision: main
+    path: yaml/Karpenter/karpenter_settings # ec2nodeclass, nodepool 파일 위치 (overlay에서 교체)
+    kustomize:
+      patches:
+        - target:
+            kind: ConfigMap
+            name: cluster-config
+          patch: |-
+            - op: replace
+              path: /data/eks_cluster
+              value: "rocket-farm-main"
+            - op: replace
+              path: /data/node_role
+              value: "rocket-farm-main-node-role"
+            - op: replace
+              path: /data/kms_key_id
+              value: "alias/rocket-farm-main-main-kms"
+            - op: replace
+              path: /data/app_node_name
+              value: "rocket-farm-main-app-node"
+            - op: replace
+              path: /data/management_node_name
+              value: "rocket-farm-main-management-node"
+            - op: replace
+              path: /data/monitoring_node_name
+              value: "rocket-farm-main-monitoring-node"
+            - op: replace
+              path: /data/az_1
+              value: "ap-northeast-2a"
+            - op: replace
+              path: /data/az_2
+              value: "ap-northeast-2c"
+            - op: replace
+              path: /data/aws_region
+              value: "ap-northeast-2"
+            - op: replace
+              path: /data/ssm_eks_endpoint
+              value: "/rocket-farm/main/eks/endpoint"
+            - op: replace
+              path: /data/ssm_kms_key_id
+              value: "/rocket-farm/main/kms/key_id"
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true # karpenter 네임스페이스 자동 생성
