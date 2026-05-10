@@ -180,16 +180,6 @@ resource "aws_iam_policy" "karpenter_controller" {
       {
         Effect = "Allow"
         Action = [
-          "sqs:DeleteMessage",
-          "sqs:GetQueueAttributes",
-          "sqs:GetQueueUrl",
-          "sqs:ReceiveMessage"
-        ]
-        Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
           "eks:DescribeCluster"
         ]
         Resource = "*"
