@@ -1,0 +1,5 @@
+# KEDA Tokyo(DR) 환경 전용 설정
+# DR은 비용 절감을 위해 operator replicaCount를 1로 유지
+
+operator:
+  replicaCount: 1

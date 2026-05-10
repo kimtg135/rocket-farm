@@ -1,0 +1,7 @@
+# Seoul(Main) KEDA ScaledObject overlay
+# 현재는 base와 동일 — 환경별 임계값 분기가 필요할 경우 이 파일에서 patch
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base

@@ -1,0 +1,51 @@
+# Tokyo(DR) KEDA ScaledObject overlay
+# DR(Warm-Standby): minReplicaCount 1로 축소 → 최소 Pod 유지, Failover 시 자동 스케일아웃
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+
+patches:
+  - target:
+      kind: ScaledObject
+      name: api-gateway-scaledobject
+    patch: |-
+      - op: replace
+        path: /spec/minReplicaCount
+        value: 1
+  - target:
+      kind: ScaledObject
+      name: auth-service-scaledobject
+    patch: |-
+      - op: replace
+        path: /spec/minReplicaCount
+        value: 1
+  - target:
+      kind: ScaledObject
+      name: inventory-service-scaledobject
+    patch: |-
+      - op: replace
+        path: /spec/minReplicaCount
+        value: 1
+  - target:
+      kind: ScaledObject
+      name: order-service-scaledobject
+    patch: |-
+      - op: replace
+        path: /spec/minReplicaCount
+        value: 1
+  - target:
+      kind: ScaledObject
+      name: payment-service-scaledobject
+    patch: |-
+      - op: replace
+        path: /spec/minReplicaCount
+        value: 1
+  - target:
+      kind: ScaledObject
+      name: product-service-scaledobject
+    patch: |-
+      - op: replace
+        path: /spec/minReplicaCount
+        value: 1

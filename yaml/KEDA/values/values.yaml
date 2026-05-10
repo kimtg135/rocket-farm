@@ -1,0 +1,33 @@
+# KEDA 공통 설정
+# operator, metricsServer, webhooks 모두 management 노드에 배치
+# (Karpenter, metric-server 등 인프라 컴포넌트와 동일한 패턴)
+
+operator:
+  replicaCount: 2
+  nodeSelector:
+    role: management
+  tolerations:
+    - key: role
+      operator: Equal
+      value: management
+      effect: NoSchedule
+
+metricsServer:
+  replicaCount: 1
+  nodeSelector:
+    role: management
+  tolerations:
+    - key: role
+      operator: Equal
+      value: management
+      effect: NoSchedule
+
+webhooks:
+  replicaCount: 1
+  nodeSelector:
+    role: management
+  tolerations:
+    - key: role
+      operator: Equal
+      value: management
+      effect: NoSchedule

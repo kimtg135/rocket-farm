@@ -1,0 +1,31 @@
+# KEDA ScaledObject 배포 (hpa-application.yaml 대체)
+# keda(wave 1) 설치 완료 후 ScaledObject CRD가 등록된 시점에 적용
+# karpenter-config(wave 2) 패턴과 동일하게 구성
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: keda-config
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "22" # 모든 backend 서비스(wave 20) 배포 이후
+spec:
+  project: default
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: rocket-farm
+  source:
+    repoURL: git@github.com:kimtg135/rocket-farm.git
+    targetRevision: main
+    path: yaml/KEDA/keda_settings/overlays/main # 환경별 overlay에서 patch
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    retry:                 # [조치 3] CRD 인식 지연 대비 retry 추가
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+    syncOptions:
+      - CreateNamespace=true

@@ -1,0 +1,41 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+patches:
+  # keda Helm: Seoul 환경 values 파일 추가
+  - target:
+      kind: Application
+      name: keda
+    patch: |-
+      - op: add
+        path: /spec/sources/0/helm/valueFiles/-
+        value: $values/yaml/KEDA/values/values-main.yaml
+
+  # keda-config: Seoul 전용 overlay 경로 설정
+  - target:
+      kind: Application
+      name: keda-config
+    patch: |-
+      - op: replace
+        path: /spec/source/path
+        value: yaml/KEDA/keda_settings/overlays/main
+
+  # metrics-server: Seoul 전용 values 설정 (JSON Patch)
+  - target:
+      kind: Application
+      name: metrics-server
+    patch: |-
+      - op: replace
+        path: /spec/source/helm/values
+        value: |
+          nodeSelector:
+            role: management
+          tolerations:
+            - key: role
+              operator: Equal
+              value: management
+              effect: NoSchedule
+          args:
+            - --kubelet-preferred-address-types=InternalIP
