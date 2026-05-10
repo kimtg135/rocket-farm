@@ -1,0 +1,32 @@
+# KEDA Helm chart 설치
+# karpenter 패턴과 동일한 multi-source 구조
+# values.yaml은 Git repo에서 참조, 환경별 values는 overlay에서 patch로 추가
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: keda
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1" # karpenter와 동일 wave — 인프라 컴포넌트 설치 단계
+spec:
+  project: default
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: keda
+  sources:
+    - repoURL: https://kedacore.github.io/charts
+      chart: keda
+      targetRevision: 2.19.0
+      helm:
+        valueFiles:
+          - $values/yaml/KEDA/values/values.yaml
+    - repoURL: git@github.com:kimtg135/rocket-farm.git
+      targetRevision: main
+      ref: values
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

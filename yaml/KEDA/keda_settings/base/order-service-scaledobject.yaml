@@ -1,0 +1,71 @@
+# order-service ScaledObject
+# 트리거 우선순위:
+#   앞단 ① RPS    - HTTP 요청량 급증을 가장 먼저 감지해 선제 스케일
+#   뒷단 ② CPU    - metric-server 기반 안전망
+#   뒷단 ③ Memory - metric-server 기반 안전망
+# HPA 설정(minReplicas, maxReplicas, behavior)은 이 ScaledObject가 관리하며
+# KEDA가 내부적으로 HPA를 자동 생성/관리함 (hpa-all 디렉토리 제거 이유)
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: order-service-scaledobject
+  namespace: rocket-farm
+spec:
+  scaleTargetRef:
+    apiVersion: argoproj.io/v1alpha1
+    kind: Rollout
+    name: order-service
+  pollingInterval: 15 # 15초마다 메트릭 평가 (Prometheus scrape 간격과 동일)
+  cooldownPeriod: 300 # minReplicaCount > 0이므로 scale-to-zero 미발생 — 실질적으로 비활성, scaleDown은 HPA stabilizationWindowSeconds가 제어
+  minReplicaCount: 2 # PDB maxUnavailable=1과 조합해 무중단 보장
+  maxReplicaCount: 35
+
+  # Prometheus 스크래핑 3회 연속 실패 시 현재 replica 수 유지 (scale-to-zero 방지)
+  # behavior: currentReplicas — KEDA 2.19.0 신규 옵션
+  fallback:
+    failureThreshold: 3
+    replicas: 2 # behavior: currentReplicas 시 이 값은 무시됨 (struct 필수 필드)
+    behavior: currentReplicas
+
+  triggers:
+    # ① 앞단: RPS 트리거 - HTTP 요청량 기반 선제 스케일
+    # metricType 기본값 AverageValue: desiredReplicas = ceil(totalRPS / threshold)
+    - type: prometheus
+      name: http_rps_order_service
+      metadata:
+        serverAddress: http://kube-prometheus-stack-prometheus.monitoring:9090
+        query: sum(rate(http_server_requests_seconds_count{namespace="rocket-farm",app="order-service"}[1m]))
+        threshold: "70"
+
+    # ② 뒷단: CPU 트리거 - metric-server 기반 (기존 HPA 설정 유지)
+    - type: cpu
+      metricType: Utilization
+      metadata:
+        value: "80"
+
+    # ③ 뒷단: Memory 트리거 - metric-server 기반 (기존 HPA 설정 유지)
+    - type: memory
+      metricType: Utilization
+      metadata:
+        value: "75"
+
+  advanced:
+    horizontalPodAutoscalerConfig:
+      name: order-service-hpa # KEDA가 생성할 HPA 이름 (kubectl get hpa로 확인 가능)
+      behavior:
+        scaleUp:
+          stabilizationWindowSeconds: 60 # 주문 처리 초기화 지연 고려 — 기동 직후 스파이크 무시를 위해 60초 대기
+          policies:
+            - type: Pods
+              value: 2
+              periodSeconds: 30
+        scaleDown:
+          stabilizationWindowSeconds: 120
+          selectPolicy: Min
+          policies:
+            - type: Percent
+              value: 10
+              periodSeconds: 45
+            - type: Pods
+              value: 2
+              periodSeconds: 45

@@ -1,0 +1,6 @@
+# KEDA Seoul(Main) 환경 전용 설정
+# 현재는 공통 values.yaml과 동일한 구성이나
+# 환경별 분기가 필요할 경우 이 파일에서 override
+
+operator:
+  replicaCount: 2
