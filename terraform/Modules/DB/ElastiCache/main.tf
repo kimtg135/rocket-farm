@@ -35,9 +35,9 @@ resource "aws_elasticache_replication_group" "redis_replication_group" {
   at_rest_encryption_enabled  = true
   kms_key_id                  = var.kms_key_arn
   transit_encryption_enabled  = true
-  snapshot_retention_limit   = var.snapshot_retention_limit
-  snapshot_window            = var.snapshot_window
-  maintenance_window         = var.maintenance_window
+  snapshot_retention_limit    = var.snapshot_retention_limit
+  snapshot_window             = var.snapshot_window
+  maintenance_window          = var.maintenance_window
   automatic_failover_enabled  = true
 
   tags = merge(var.common_tags, {

@@ -89,13 +89,13 @@ resource "aws_rds_cluster" "db_cluster" {
   storage_encrypted               = true
   kms_key_id                      = var.kms_key_arn
 
-  skip_final_snapshot       = false
-  final_snapshot_identifier = "${var.project_name}-${var.region_role}-final-snapshot"
-  deletion_protection       = true
-  backup_retention_period   = var.backup_retention_period
-  preferred_backup_window   = var.preferred_backup_window
+  skip_final_snapshot          = false
+  final_snapshot_identifier    = "${var.project_name}-${var.region_role}-final-snapshot"
+  deletion_protection          = true
+  backup_retention_period      = var.backup_retention_period
+  preferred_backup_window      = var.preferred_backup_window
   preferred_maintenance_window = var.preferred_maintenance_window
-  copy_tags_to_snapshot     = true
+  copy_tags_to_snapshot        = true
 
   lifecycle {
     ignore_changes = [

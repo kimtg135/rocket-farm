@@ -96,7 +96,7 @@ resource "aws_kms_key" "aurora" {
   description             = "RDS Aurora encryption key"
   deletion_window_in_days = 7
   enable_key_rotation     = true
-  
+
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -117,7 +117,7 @@ resource "aws_kms_key" "aurora" {
     ]
   })
 
-  tags                    = merge(var.common_tags, { Name = "${var.project_name}-${var.region_role}-aurora-kms" })
+  tags = merge(var.common_tags, { Name = "${var.project_name}-${var.region_role}-aurora-kms" })
 }
 
 
@@ -131,7 +131,7 @@ resource "aws_kms_key" "redis" {
   description             = "Redis encryption key"
   deletion_window_in_days = 7
   enable_key_rotation     = true
-  
+
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -151,8 +151,8 @@ resource "aws_kms_key" "redis" {
       }
     ]
   })
-  
-  tags                    = merge(var.common_tags, { Name = "${var.project_name}-${var.region_role}-redis-kms" })
+
+  tags = merge(var.common_tags, { Name = "${var.project_name}-${var.region_role}-redis-kms" })
 }
 
 resource "aws_kms_alias" "redis" {
