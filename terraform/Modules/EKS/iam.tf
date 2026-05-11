@@ -148,7 +148,6 @@ resource "aws_iam_policy" "karpenter_controller" {
           "ec2:DescribeInstanceTypeOfferings",
           "ec2:DescribeAvailabilityZones",
           "ec2:DescribeImages",
-          "ec2:DescribeSpotPriceHistory",
           "ec2:DeleteLaunchTemplate",
           "pricing:GetProducts",
           "iam:ListInstanceProfiles",
