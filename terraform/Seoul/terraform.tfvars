@@ -84,7 +84,7 @@ db_family               = "aurora-mysql8.0"
 db_charset              = "utf8mb4"
 db_collation            = "utf8mb4_unicode_ci"
 db_name                 = "rocketfarm"
-db_instance_type        = "db.r6g.2xlarge"
+db_instance_type        = "db.r6g.xlarge"
 db_num_instances        = 2
 db_secret_name          = "rocket-farm/aurora/credentials"
 db_port                 = 3306
@@ -95,7 +95,7 @@ db_maintenance_window   = "sun:19:00-sun:20:00"
 # ElastiCache
 redis_engine                 = "redis"
 redis_engine_version         = "7.1"
-redis_node_type              = "cache.r6g.2xlarge"
+redis_node_type              = "cache.r6g.xlarge"
 redis_num_cache_clusters     = 2
 redis_port                   = 6379
 redis_parameter_group_family = "redis7"
