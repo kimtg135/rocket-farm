@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: payment-service
+  datasource:
+    hikari:
+      # 트랜잭션 중심 서비스 — 외부 PG 연동, 결제 상태 기록
+      # 트러블슈팅 #4: 기본값(10) → 5로 조정
+      # 근거: maxReplicas(25) × pool(5) = 125 connections, db.r6g.xlarge max(2,000) 내 여유 확보
+      # maxReplicas를 25로 제한한 이유: 외부 PG API 처리 한계를 고려한 보수적 설정
+      maximum-pool-size: 5
+      minimum-idle: 1
+      connection-timeout: 5000
+      max-lifetime: 1800000
+      keepalive-time: 600000
