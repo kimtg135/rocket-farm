@@ -4,9 +4,9 @@ spring:
   datasource:
     hikari:
       # 단순 조회 중심 서비스 — 트랜잭션 없음
-      # 트러블슈팅 #4: 기본값(10) → 5로 조정
-      # 근거: maxReplicas(35) × pool(5) = 175 connections, db.r6g.xlarge max(2,000) 내 여유 확보
-      maximum-pool-size: 5
+      # 트러블슈팅 #4: 기본값(10) → 3으로 조정
+      # 근거: maxReplicas(35) × pool(3) = 105 connections, db.r6g.xlarge max(2,000) 내 여유 확보
+      maximum-pool-size: 3
       minimum-idle: 1
       connection-timeout: 5000
       max-lifetime: 1800000
